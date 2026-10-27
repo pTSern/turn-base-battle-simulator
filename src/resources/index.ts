@@ -2,6 +2,7 @@ import { TEntity } from "../core";
 import { Xorshift128p } from "../utils";
 import { CharacterBuff, CharacterStats, CharacterStatus, CharacterTeam } from "./components/character";
 import { ICombatLog } from "./components/combat";
+import { SkillAction } from "./components/skill";
 import { world } from "./utils";
 
 export class BattleEngine {
@@ -66,6 +67,18 @@ export class BattleEngine {
     execute(round: number, actor: TEntity) {
         const _status = world.get_component(actor, CharacterStatus);
         if(!_status.alive) return;
+
+        const [_stats, _buffs] = world.get_components(actor, CharacterStats, CharacterBuff, CharacterTeam, SkillAction);
+        if(_buffs.list.some(_b => _b.type === 'STUN')) {
+            return
+        }
+
+        const _castable = this.is_castable_skill(_stats);
+
+    }
+
+    is_castable_skill(_stats: CharacterStats) {
+        return _stats.engery.current >= (_stats.engery.threshold * _stats.engery.max)
     }
 
     log(battle: ICombatLog) {
