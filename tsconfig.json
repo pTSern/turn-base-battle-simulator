@@ -1,0 +1,24 @@
+{
+    // Visit https://aka.ms/tsconfig to read more about this file
+    "compilerOptions": {
+        "rootDir": "./src",
+        "outDir": "./dist",
+        "module": "commonjs",
+        "target": "es2022",
+        "types": [],
+        "strict": false,
+        "skipLibCheck": true,
+        "moduleResolution": "bundler",
+        "resolveJsonModule": true,
+        "esModuleInterop": true,
+        "paths": {
+            "@pTS://utils": [
+                "./src/utils/index"
+            ],
+            "@pTS://core": [
+                "./src/core/index"
+            ]
+        }
+    },
+    "include": ["src/**/*"],
+}
