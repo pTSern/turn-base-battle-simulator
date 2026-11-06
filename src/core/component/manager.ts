@@ -17,14 +17,17 @@ export class ComponentManager {
     /**
      * Registers a component class with the manager before it is used.
      */
-    public register<T>(_class: pFlex.TCtor<any, T>): void {
+    public register<T>(_class: pFlex.TCtor<any, T>) {
         if (this._types.has(_class)) {
             throw new Error(`Registering component type '${_class.name}' more than once.`);
         }
 
         this._types.set(_class, this._TNext);
-        this._components.set(_class, new Component<T>());
+        const _arr = new Component<T>();
+        this._components.set(_class, _arr);
         this._TNext++;
+
+        return _arr;
     }
 
     /**
@@ -33,7 +36,8 @@ export class ComponentManager {
     public type<T>(_class: pFlex.TCtor<any, T>): TComponent {
         const type = this._types.get(_class);
         if (type === undefined) {
-            throw new Error(`Component '${_class.name}' not registered before use.`);
+            this.register(_class);
+            return this._types.get(_class)!;
         }
         return type;
     }
@@ -41,7 +45,8 @@ export class ComponentManager {
     /**
      * Adds a component instance to an entity.
      */
-    public add<T>(entity: TEntity, _class: pFlex.TCtor<any, T>, component: T): void {
+    public add<_TType, _TArgs extends any[]>(entity: TEntity, _class: pFlex.TCtor<_TArgs, _TType>, _param: _TArgs): void {
+        const component = new _class(..._param);
         this.array(_class).insert(entity, component);
     }
 
@@ -98,7 +103,7 @@ export class ComponentManager {
     private array<T>(_class: pFlex.TCtor<any, T>): Component<T> {
         const array = this._components.get(_class);
         if (!array) {
-            throw new Error(`Component '${_class.name}' not registered before use.`);
+            return this.register(_class);
         }
         return array as Component<T>;
     }

@@ -38,8 +38,8 @@ export class World<_TEvents extends pFlex.TKey> {
         this.component.register(_class);
     }
 
-    add_component<T>(entity: TEntity, _class: pFlex.TCtor<any, T>, component: T) {
-        this.component.add(entity, _class, component);
+    add_component<_TType, _TArgs extends any[]>(entity: TEntity, _class: pFlex.TCtor<_TArgs, _TType>, ..._param: _TArgs) {
+        this.component.add(entity, _class, _param);
 
         let _signature = this.entity.call('signature.get', entity);
         if (!_signature) {
@@ -54,10 +54,10 @@ export class World<_TEvents extends pFlex.TKey> {
 
     query_component(...args: (pFlex.TCtor<any> | pFlex.TCtor<any>[])[]): EntityQueryResult {
         const classes = Array.from(new Set(args.flat() as pFlex.TCtor<any>[]));
-        const activeEntities = this._getActiveEntities();
+        const activeEntities = this._get_active_entities();
 
         if (classes.length === 0) {
-            return this._makeQueryResult(activeEntities);
+            return this._make_query_result(activeEntities);
         }
 
         const types = classes.map(cls => this.component.type(cls));
@@ -70,23 +70,23 @@ export class World<_TEvents extends pFlex.TKey> {
             return true;
         });
 
-        return this._makeQueryResult(matched);
+        return this._make_query_result(matched);
     }
 
-    protected _getActiveEntities(): TEntity[] {
+    protected _get_active_entities(): TEntity[] {
         if ('entities' in this.entity && Array.isArray((this.entity as any).entities)) {
             return (this.entity as any).entities;
         }
         return Array.from(this._entities);
     }
 
-    protected _makeQueryResult(entities: TEntity[]): EntityQueryResult {
+    protected _make_query_result(entities: TEntity[]): EntityQueryResult {
         const result = [...entities] as EntityQueryResult;
         Object.defineProperty(result, 'query', {
             value: (...nextComponents: (pFlex.TCtor<any> | pFlex.TCtor<any>[])[]) => {
                 const nextClasses = Array.from(new Set(nextComponents.flat() as pFlex.TCtor<any>[]));
                 if (nextClasses.length === 0) {
-                    return this._makeQueryResult(result);
+                    return this._make_query_result(result);
                 }
                 const nextTypes = nextClasses.map(cls => this.component.type(cls));
                 const filtered = result.filter(entity => {
@@ -97,7 +97,7 @@ export class World<_TEvents extends pFlex.TKey> {
                     }
                     return true;
                 });
-                return this._makeQueryResult(filtered);
+                return this._make_query_result(filtered);
             },
             enumerable: false,
             configurable: true,
